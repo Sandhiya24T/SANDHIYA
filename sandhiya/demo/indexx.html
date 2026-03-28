@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase Login + Database</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #9c3434;
+      display: flex;
+      justify-content: center;
+      margin-top: 80px;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 0 10px gray;
+    }
+    input {
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    #msg {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>Login / Signup</h2>
+
+  <input type="email" id="email" placeholder="Enter Email">
+  <input type="password" id="password" placeholder="Enter Password">
+
+  <button id="signup">Sign Up</button>
+  <button id="login">Login</button>
+
+  <p id="msg"></p>
+</div>
+
+<script type="module">
+
+// 🔥 Firebase Imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getDatabase, ref, set } 
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+// 🔥 Your Firebase Config
+ const firebaseConfig = {
+    apiKey: "AIzaSyDN6exFDWuylDZ6-Fg9bEMEnRDSVApeiJ8",
+    authDomain: "loginform-a968b.firebaseapp.com",
+    projectId: "loginform-a968b",
+    storageBucket: "loginform-a968b.firebasestorage.app",
+    messagingSenderId: "94316471567",
+    appId: "1:94316471567:web:84ef0055fa0d85a3990a7a",
+    measurementId: "G-4TENT9W7SX"
+  };
+// ✅ Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// UI Elements
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+const msg = document.getElementById("msg");
+
+// ✅ SIGNUP + STORE DATA
+document.getElementById("signup").onclick = () => {
+
+  const cleanEmail = email.value.trim();
+  const cleanPassword = password.value.trim();
+
+  if (!cleanEmail || !cleanPassword) {
+    msg.style.color = "red";
+    msg.innerText = "Please fill all fields!";
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth, cleanEmail, cleanPassword)
+    .then((userCredential) => {
+
+      const user = userCredential.user;
+
+      // 🔥 Store in Realtime Database
+      set(ref(db, "users/" + user.uid), {
+        email: user.email,
+        uid: user.uid
+      });
+
+      msg.style.color = "green";
+      msg.innerText = "Signup successful + data stored!";
+    })
+    .catch((error) => {
+      msg.style.color = "red";
+      msg.innerText = error.message;
+    });
+};
+
+// ✅ LOGIN
+document.getElementById("login").onclick = () => {
+
+  const cleanEmail = email.value.trim();
+  const cleanPassword = password.value.trim();
+
+  signInWithEmailAndPassword(auth, cleanEmail, cleanPassword)
+    .then(() => {
+      msg.style.color = "green";
+      msg.innerText = "Login successful!";
+    })
+    .catch((error) => {
+      msg.style.color = "red";
+      msg.innerText = error.message;
+    });
+};
+
+</script>
+
+</body>
+</html>
